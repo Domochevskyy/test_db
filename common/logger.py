@@ -12,7 +12,7 @@ def get_logger(name: str, verbose: bool = False) -> logging.Logger:
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.DEBUG) if verbose else stream_handler.setLevel(logging.INFO)
 
-    fmt = '[%(levelname)s %(asctime)s %(name)s] %(message)s'
+    fmt = '[%(levelname)s] %(asctime)s %(name)s %(funcName)s: %(message)s'
     date_fmt = '%d.%m.%Y %H:%M:%S'
     stream_formatter = logging.Formatter(fmt=fmt, datefmt=date_fmt)
 
