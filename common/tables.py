@@ -1,7 +1,12 @@
+import functools
+import typing
+from dataclasses import astuple
+
 from typing import Optional, Any
 
 from psycopg import Cursor, sql
 from psycopg.abc import Params
+from psycopg.errors import InFailedSqlTransaction
 from psycopg.rows import class_row
 
 from common.db_client import DataBaseClient
@@ -61,6 +66,21 @@ class TableManager:
             raise
 
 
+def on_transaction_failed(method: typing.Callable):
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        try:
+            return method(*args, **kwargs)
+        except InFailedSqlTransaction as error:
+            logger.warning(f'Transaction failed for {method}.')
+            logger.warning(error)
+            if isinstance(args[0], Persons):
+                persons_object: Persons = args[0]
+                persons_object.db_client.connection.rollback()
+
+    return wrapper
+
+
 class Table:
     # TODO: is Table abstract class which provides interfaces?
     #       Persons and BetterPersons methods have different signatures.
@@ -74,6 +94,7 @@ class Persons(Table):
         super().__init__(db_client)
         self.table_name = 'persons'
 
+    @on_transaction_failed
     def select(self, person: Person, *, by: PersonField) -> Optional[Person]:
         logger.info(f'Select {person} by {by.name}.')
         q = """SELECT * FROM {} WHERE {} = {value};"""
@@ -85,44 +106,42 @@ class Persons(Table):
 
         with self.db_client.connection.cursor(row_factory=class_row(person.__class__)) as cur:
             result = cur.execute(query).fetchone()
-        logger.info(f'Execute: <{query.as_string(self.db_client.connection)}>')
         return result
 
+    @on_transaction_failed
     def insert(self, person: Person) -> Optional[Person]:
         logger.info(f'INSERT {person} INTO {self.table_name}.')
         q = """INSERT INTO {} VALUES (%s, %s, %s) RETURNING *;"""
-        params = person.get_fields()
+        params = astuple(person)
         query = sql.SQL(q).format(
             sql.Identifier(self.table_name),
         )
-
         with self.db_client.connection.cursor(row_factory=class_row(person.__class__)) as cur:
             result = cur.execute(query, params).fetchone()
-        logger.info(f'Execute: <{query.as_string(self.db_client.connection)}>')
         return result
 
+    @on_transaction_failed
     def update(
             self,
             person_id: int,
             person_fields: list[PersonField],
             person_values: list[Any],
     ) -> Optional[Person | list[Person]]:
-        logger.info(f'Update person fields: {person_fields} by id:{person_fields}.')
-        q = """UPDATE {} SET {fields} VALUES ({}) WHERE person_id = {value} RETURNING *;"""
+        q = """UPDATE {} SET ({}) = ({}) WHERE person_id = {value} RETURNING *;"""
 
-        person_fields_as_str = list(map(str, person_fields))
+        person_fields_as_str = [field.name for field in person_fields]
+        logger.info(f'Update person fields: {person_fields_as_str} by id: {person_id}.')
         query = sql.SQL(q).format(
             sql.Identifier(self.table_name),
             sql.SQL(', ').join(map(sql.Identifier, person_fields_as_str)),
-            sql.SQL(', ').join(map(sql.Placeholder, person_values)),
+            sql.SQL(', ').join(sql.Placeholder() * len(person_values)),
             value=person_id,
         )
-
-        with self.db_client.connection.cursor(row_factory=class_row(Person.__class__)) as cur:
-            result = cur.execute(query).fetchone()
-        logger.info(f'Execute: <{query.as_string(self.db_client.connection)}>')
+        with self.db_client.connection.cursor(row_factory=class_row(Person)) as cur:
+            result = cur.execute(query, params=person_values).fetchone()
         return result
 
+    @on_transaction_failed
     def delete(self, person: Person, *, by: PersonField) -> Optional[Person | list[Person]]:
         logger.info(f'Delete {person} from {self.table_name} by {by.name}.')
         q = """DELETE from {} WHERE {} = {value} RETURNING *;"""
@@ -134,7 +153,6 @@ class Persons(Table):
 
         with self.db_client.connection.cursor(row_factory=class_row(person.__class__)) as cur:
             result = cur.execute(query).fetchall()
-        logger.info(f'Execute: <{query.as_string(self.db_client.connection)}>')
         if len(result) == 1:
             return result[0]
         return result
