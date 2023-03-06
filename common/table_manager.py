@@ -105,7 +105,7 @@ class Persons(Table):
             self,
             person_id: int,
             person_fields: list[PersonField],
-            person_values: Any[list]
+            person_values: list[Any],
     ) -> Optional[Person | list[Person]]:
         logger.info(f'Update person fields: {person_fields} by id:{person_fields}.')
         q = """UPDATE {} SET {fields} VALUES ({}) WHERE person_id = {value} RETURNING *;"""
