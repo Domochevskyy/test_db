@@ -56,7 +56,7 @@ class TableManager:
             with cursor:
                 result = cursor.execute(row_sql, params)
                 # TODO: fix logging message
-                logger.info(f'Execute\n\t{row_sql}\n\t with {params=}')
+                logger.info(f'Execute\t{row_sql}\t with {params=}')
                 if fetch_result:
                     # TODO: add flexibility for fetching
                     return result.fetchone()
