@@ -4,7 +4,7 @@ import pytest
 
 from common.db_client import DataBaseClient
 from common.logger import get_logger
-from common.table_manager import TableManager
+from common.tables import TableManager
 
 # TODO: is row sql fixtures should be here?
 # TODO: add beautiful parameter throwing via class or the other structure
