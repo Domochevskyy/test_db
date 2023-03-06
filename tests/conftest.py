@@ -1,6 +1,8 @@
 import os
+import sys
 
 import pytest
+from psycopg import OperationalError
 
 from common.db_client import DataBaseClient
 from common.logger import get_logger
@@ -28,9 +30,14 @@ logger = get_logger('root conftest.py')
 @pytest.fixture(scope='session')
 def db_client() -> DataBaseClient:
     # TODO: make db clients factory
-    db_client = DataBaseClient(connect_info)
-    yield db_client
-    db_client.close()
+    try:
+        db_client = DataBaseClient(connect_info)
+    except OperationalError:
+        logger.error('Check the connection to database.')
+        sys.exit(2)
+    else:
+        yield db_client
+        db_client.close()
 
 
 @pytest.fixture(scope='class')
