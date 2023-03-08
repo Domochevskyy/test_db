@@ -1,34 +1,64 @@
-import os
 import sys
 
 import pytest
+from _pytest.config.argparsing import Parser
 from psycopg import OperationalError
 
 from common.db_client import DataBaseClient
 from common.logger import get_logger
 from common.tables import TableManager
 
-# TODO: is row sql fixtures should be here?
-# TODO: add beautiful parameter throwing via class or the other structure
-host = os.getenv('POSTGRES_CONTAINER_NAME', 'localhost')
-port = '5432'
-db_name = os.getenv('POSTGRES_DB', 'test_db')
-username = os.getenv('POSTGRES_USER', 'test_user')
-password = os.getenv('POSTGRES_PASSWORD', 'test_password')
-connection_timeout = 5
-
-connect_info = f'host=localhost ' \
-               f'port=5432 ' \
-               f'dbname={db_name} ' \
-               f'user={username} ' \
-               f'connect_timeout=5 ' \
-               f'password={password}'
-
 logger = get_logger('root conftest.py')
 
 
+def pytest_addoption(parser: Parser):
+    parser.addoption(
+        '--ip',
+        type=str,
+        action='store',
+        help='Database host ip.',
+        required=True,
+    )
+    parser.addoption(
+        '--port',
+        type=str,
+        action='store',
+        help='Database host port.',
+        required=True,
+    )
+    parser.addoption(
+        '--database',
+        type=str,
+        action='store',
+        help='Database name.',
+        required=True,
+    )
+    parser.addoption(
+        '--username',
+        type=str,
+        action='store',
+        help='User which connected to database.',
+        required=True,
+    )
+
+    parser.addoption(
+        '--password',
+        type=str,
+        action='store',
+        help='User password for auth.',
+        required=True,
+    )
+
+
 @pytest.fixture(scope='session')
-def db_client() -> DataBaseClient:
+def db_client(request) -> DataBaseClient:
+    host = request.config.getoption('--ip')
+    port = request.config.getoption('--port')
+    dbname = request.config.getoption('--database')
+    user = request.config.getoption('--username')
+    password = request.config.getoption('--password')
+
+    connect_info = f'{host=} {port=} {dbname=} {user=} {password=}'
     # TODO: make db clients factory
     try:
         db_client = DataBaseClient(connect_info)
