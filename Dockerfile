@@ -11,4 +11,5 @@ ENTRYPOINT pytest --ip ${POSTGRES_CONTAINER_NAME} \
                   --port ${POSTGRES_PORT} \
                   --database ${POSTGRES_DB} \
                   --username ${POSTGRES_USER} \
-                  --password ${POSTGRES_PASSWORD}
+                  --password ${POSTGRES_PASSWORD} \
+                  --alluredir=WORKDIR/allure-results
