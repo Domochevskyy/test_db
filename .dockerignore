@@ -3,3 +3,4 @@
 .gitignore
 venv
 __pycache__
+.flake8

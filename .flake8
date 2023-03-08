@@ -1,0 +1,23 @@
+[flake8]
+ignore =
+    WPS,
+    D,
+    P103,
+    S101
+
+
+exclude =
+    venv,
+    .git,
+    __pypackages__,
+    *.pyc
+    .pytest_cache
+
+per-file-ignores =
+    *__init__.py:D104
+    *__init__.py:F401
+
+max_line_complexity = 28
+
+count = True
+max_line_length = 120
