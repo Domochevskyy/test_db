@@ -24,13 +24,13 @@ def persons_table(db_client, table_manager):
 
 
 @pytest.fixture
-def clear_table(persons_table):
+def clear_table_persons(persons_table):
     yield
-    q = """TRUNCATE TABLE persons"""
+    q = """TRUNCATE TABLE persons;"""
     persons_table.db_client.connection.execute(q)
 
 
-@pytest.mark.usefixtures('persons_table', 'clear_table')
+@pytest.mark.usefixtures('persons_table', 'clear_table_persons')
 class TestPersonDML:
 
     def test_select_person(self, persons_table):
@@ -46,7 +46,7 @@ class TestPersonDML:
         result: select response has Person with correct data
 
         teardown:
-        1. Clear persons
+        1. Truncate persons
         2. Delete persons
         3. Disconnect from test_db
         """
@@ -67,9 +67,9 @@ class TestPersonDML:
         result: select result is None
 
         teardown:
-        1. Clear table
-        1. Delete table
-        2. Disconnect from test_db
+        1. Truncate persons
+        2. Delete persons
+        3. Disconnect from test_db
         """
         person_not_in_table = Person(1, 'Sub-Zero', date(2007, 12, 4))
         selected_person = persons_table.select(person_not_in_table, by=PersonField.person_id)
@@ -87,8 +87,8 @@ class TestPersonDML:
         result: Person in table with correct data
 
         teardown:
-        1. Clear table
-        2. Delete table
+        1. Truncate persons
+        2. Delete persons
         3. Disconnect from test_db
         """
         person_to_be_inserted = Person(1, 'Smoke', date(1000, 5, 2))
@@ -109,7 +109,7 @@ class TestPersonDML:
 
         teardown:
         1. Truncate persons
-        2. Delete table persons
+        2. Delete persons
         3. Disconnect from database test_db
         """
         person = Person(1, 'Liu Kang', date(1000, 5, 2))
@@ -131,7 +131,7 @@ class TestPersonDML:
         result: Person has a new person_id and a new first_name
 
         teardown:
-        1. Clear persons
+        1. Truncate persons
         2. Delete persons
         3. Disconnect from test_db
         """
@@ -160,9 +160,9 @@ class TestPersonDML:
         result: Person was not updated
 
         teardown:
-        1. Clear persons
-        1. Delete  persons
-        2. Disconnect from test_db
+        1. Truncate persons
+        2. Delete persons
+        3. Disconnect from test_db
         """
         new_id = 123
         new_first_name = 'Kenshi'
@@ -186,9 +186,9 @@ class TestPersonDML:
         result: Person deleted
 
         teardown:
-        1. Clear persons
-        1. Delete persons
-        2. Disconnect from test_db
+        1. Truncate persons
+        2. Delete persons
+        3. Disconnect from test_db
         """
         person = Person(1, 'Kung Lao', datetime.date(999, 12, 12))
         persons_table.insert(person)
@@ -209,11 +209,10 @@ class TestPersonDML:
         result: Person delete failed
 
         teardown:
-        1. Clear persons
-        1. Delete persons
-        2. Disconnect from test_db
+        1. Truncate persons
+        2. Delete persons
+        3. Disconnect from test_db
         """
-
         person = Person(666, 'Night Wolf', datetime.date(2033, 10, 5))
         deleted_person = persons_table.delete(person, by=PersonField.person_id)
         assert not deleted_person, 'We cannot delete non-existent Person!'
