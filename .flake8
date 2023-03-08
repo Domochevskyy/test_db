@@ -5,7 +5,6 @@ ignore =
     P103,
     S101
 
-
 exclude =
     venv,
     .git,
