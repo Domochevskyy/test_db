@@ -17,7 +17,7 @@ username = os.getenv('POSTGRES_USER', 'test_user')
 password = os.getenv('POSTGRES_PASSWORD', 'test_password')
 connection_timeout = 5
 
-connect_info = f'host=db ' \
+connect_info = f'host=localhost ' \
                f'port=5432 ' \
                f'dbname={db_name} ' \
                f'user={username} ' \
@@ -41,21 +41,34 @@ def db_client() -> DataBaseClient:
 
 
 @pytest.fixture(scope='class')
-def table_manager(db_client) -> TableManager:
+def table_manager(db_client: DataBaseClient) -> TableManager:
     return TableManager(db_client)
 
 
 @pytest.fixture(scope='class')
 def create_table_persons(
-        table_manager,
-        create_table_persons_row_sql,
-        delete_table_persons_row_sql,
+        table_manager: TableManager,
+        create_table_persons_row_sql: str,
+        delete_table_persons_row_sql: str,
 ) -> None:
     # TODO: make dependency injection for creating different tables
     table_name = 'persons'
     table_manager.create_table(table_name, create_table_persons_row_sql)
     yield
     table_manager.delete_table(table_name, delete_table_persons_row_sql)
+
+
+@pytest.fixture(scope='class')
+def create_table_better_persons(
+        table_manager,
+        create_table_better_persons_row_sql,
+        delete_table_better_persons_row_sql,
+) -> None:
+    # TODO: Or create simple factory method (create_table_persons)
+    table_name = 'better_persons'
+    table_manager.create_table(table_name, create_table_better_persons_row_sql)
+    yield
+    table_manager.delete_table(table_name, delete_table_better_persons_row_sql)
 
 
 @pytest.fixture(scope='class')
@@ -74,7 +87,7 @@ def delete_table_persons_row_sql() -> str:
     return """DROP TABLE persons;"""
 
 
-@pytest.fixture
+@pytest.fixture(scope='class')
 def create_table_better_persons_row_sql() -> str:
     return """
     CREATE TABLE better_persons (
@@ -89,6 +102,6 @@ def create_table_better_persons_row_sql() -> str:
     """
 
 
-@pytest.fixture
+@pytest.fixture(scope='class')
 def delete_table_better_persons_row_sql() -> str:
     return """DROP TABLE better_persons;"""
