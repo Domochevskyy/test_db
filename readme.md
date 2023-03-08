@@ -17,19 +17,19 @@
 + **Клонируем репозиторий**
 
 ```console
-$ git clone https://github.com/Domochevskyy/test_db.git
+git clone https://github.com/Domochevskyy/test_db.git
 ```
 
 + **Переходим в главную директорию проекта**
 
 ```console
-$ cd test_db
+cd test_db
 ```
 
 + **Билдим образы и запускаем контейнеры в attach режиме**
 
 ```console
-$ docker compose up --build
+docker compose up --build
 ```
 
 Для того чтобы остановить контейнеры, нужно нажать сочетание клавиш `Ctrl + C`
@@ -37,25 +37,25 @@ $ docker compose up --build
 + **Либо можно запустить контейнеры в режиме демона**
 
 ```console
-$ docker compose up --build --detach
+docker compose up --build --detach
 ```
 
 + **Посмотреть результат тест-рана можно через логи контейнера**
 
 ```console
-$ docker compose logs tests
+docker compose logs tests
 ```
 
 + **Удалить все используемые в проекте контейнеры**
 
 ```console
-$ docker compose down
+docker compose down
 ```
 
 + **Удалить все используемые в проекте имаджи**
 
 ```console
-$ docker rmi tests task_test-tests:latest test_db-tests:latest postgres:15.2
+docker rmi tests task_test-tests:latest test_db-tests:latest postgres:15.2
 ```
 
 Перед этим необходимо убедиться, что все контейнеры, порожденные этими имаджами, остановлены
@@ -63,5 +63,5 @@ $ docker rmi tests task_test-tests:latest test_db-tests:latest postgres:15.2
 + **Удалить созданную докером сеть**
 
 ```console
-$ docker network rm test_db_default
+docker network rm test_db_default
 ```
