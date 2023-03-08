@@ -1,11 +1,11 @@
 import functools
-from dataclasses import astuple
-
 import typing
+from dataclasses import astuple
 
 from psycopg import Cursor, sql
 from psycopg.abc import Params
-from psycopg.errors import InFailedSqlTransaction, UniqueViolation, SyntaxError, UndefinedColumn, UndefinedObject
+from psycopg.errors import (InFailedSqlTransaction, SyntaxError,
+                            UndefinedColumn, UndefinedObject, UniqueViolation)
 from psycopg.rows import class_row, dict_row
 
 from common.db_client import DataBaseClient

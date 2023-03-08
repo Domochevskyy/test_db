@@ -1,5 +1,5 @@
 import psycopg
-from psycopg import OperationalError, Connection
+from psycopg import Connection, OperationalError
 
 from common.logger import get_logger
 

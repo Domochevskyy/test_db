@@ -3,8 +3,8 @@ from datetime import date
 
 import pytest
 
-from common.tables import Persons
 from common.models import Person, PersonField
+from common.tables import Persons
 
 
 @pytest.fixture(scope='class')
